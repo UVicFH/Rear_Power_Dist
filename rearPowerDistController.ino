@@ -61,7 +61,7 @@ void setup()
   toggleCPortRegisterIO(cPortRegister);
   toggleDPortRegisterIO(dPortRegister);
   
-  while(1)
+  for(;;)
   {
     if(CAN_OK == CAN.begin(CAN_500KBPS))
     {
