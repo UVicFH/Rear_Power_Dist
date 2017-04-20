@@ -1,4 +1,4 @@
-#define SPI_CS_PIN 10
+#define SPI_CS_PIN 9
 #define CAN_REAR_POWER_DIST_MSG_ADDRESS 0x50
 
 #define CAN_0 0
