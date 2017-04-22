@@ -1,8 +1,8 @@
 #include <mcp_can.h>
 #include <mcp_can_dfs.h>
+#include <TimerOne.h>
 
 #include "Pin_Defines.h"
-
 
 MCP_CAN CAN(SPI_CS_PIN);
 
@@ -36,6 +36,8 @@ void ioRegisterManipulation(uint8_t len, uint8_t* buf)
   PORTD ^= (-((buf[0]>>CAN_7)&BIT_1_MASK)^PORTD)&(1U<<PD1); //Shift DOWN
   PORTC ^= (-((buf[1]>>CAN_1)&BIT_1_MASK)^PORTC)&(1U<<PC3); // Brake
   PORTC ^= (-((buf[1]>>CAN_2)&BIT_1_MASK)^PORTC)&(1U<<PC4); // Startup
+  
+  Timer1.pwm(ENGINE_FAN_PIN, buf[2]<<2); 
 }
 
 void handleCANMessage(void)
@@ -52,6 +54,7 @@ void handleCANMessage(void)
 void setup()
 {
   Serial.begin(115200);
+  Timer1.initialize(2000);  // 2000 us = 500 Hz
 
   uint8_t bPortRegister = 0b00000001;
   uint8_t cPortRegister = 0b00111001;
