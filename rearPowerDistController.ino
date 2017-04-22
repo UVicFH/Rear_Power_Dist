@@ -30,7 +30,11 @@ void ioRegisterManipulation(uint8_t len, uint8_t* buf)
   PORTC ^= (-((buf[0]>>CAN_1)&BIT_1_MASK)^PORTC)&(1U<<PC5); //FP
   
   PORTC ^= (-((buf[0]>>CAN_3)&BIT_1_MASK)^PORTC)&(1U<<PC0); //RTD
-  PORTD ^= (-((buf[0]>>CAN_4)&BIT_1_MASK)^PORTD)&(1U<<PD7); // Micro Squirt
+  
+  // PORTD ^= (-((buf[0]>>CAN_4)&BIT_1_MASK)^PORTD)&(1U<<PD7); // Micro Squirt
+  // Temporary debug, keep MS on
+  PORTD |= 1U<<PD7;
+  
   PORTD ^= (-((buf[0]>>CAN_5)&BIT_1_MASK)^PORTD)&(1U<<PD2); //Starter
   PORTD ^= (-((buf[0]>>CAN_6)&BIT_1_MASK)^PORTD)&(1U<<PD5); //FuelPump
   PORTD ^= (-((buf[0]>>CAN_7)&BIT_1_MASK)^PORTD)&(1U<<PD1); //Shift DOWN
