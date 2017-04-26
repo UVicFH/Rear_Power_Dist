@@ -62,7 +62,7 @@ void setup()
 
   uint8_t bPortRegister = 0b00000001;
   uint8_t cPortRegister = 0b00111001;
-  uint8_t dPortRegister = 0b11100111;
+  uint8_t dPortRegister = 0b10100111;
 
   toggleBPortRegisterIO(bPortRegister);
   toggleCPortRegisterIO(cPortRegister);
