@@ -57,7 +57,6 @@ void handleCANMessage(void)
 
 void setup()
 {
-  Serial.begin(115200);
   Timer1.initialize(2000);  // 2000 us = 500 Hz
 
   uint8_t bPortRegister = 0b00000001;
