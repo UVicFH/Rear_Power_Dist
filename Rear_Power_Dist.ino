@@ -6,46 +6,30 @@
 
 MCP_CAN CAN(SPI_CS_PIN);
 
-void ioRegisterManipulation(uint8_t len, uint8_t* buf)
+void set_outputs(byte len, byte* buf)
 {
-  // TODO this should be mapped better but it works so leaving it.
   
-  //Deal with IO (In order of CAN message location)  
-  PORTD ^= (-((buf[0]>>CAN_0)&BIT_1_MASK)^PORTD)&(1U<<PD0); //Brake Light
-  PORTC ^= (-((buf[0]>>CAN_1)&BIT_1_MASK)^PORTC)&(1U<<PC5); //FP
-  
-  PORTC ^= (-((buf[0]>>CAN_3)&BIT_1_MASK)^PORTC)&(1U<<PC0); //RTD
-  
-  // PORTD ^= (-((buf[0]>>CAN_4)&BIT_1_MASK)^PORTD)&(1U<<PD7); // Micro Squirt
-  // Temporary debug, keep MS on
-  PORTD |= 1U<<PD7;
-  
-  PORTD ^= (-((buf[0]>>CAN_5)&BIT_1_MASK)^PORTD)&(1U<<PD2); //Starter
-  PORTD ^= (-((buf[0]>>CAN_6)&BIT_1_MASK)^PORTD)&(1U<<PD5); //FuelPump
-  PORTD ^= (-((buf[0]>>CAN_7)&BIT_1_MASK)^PORTD)&(1U<<PD1); //Shift DOWN
-  PORTC ^= (-((buf[1]>>CAN_1)&BIT_1_MASK)^PORTC)&(1U<<PC3); // Brake
-  PORTC ^= (-((buf[1]>>CAN_2)&BIT_1_MASK)^PORTC)&(1U<<PC4); // Startup
-  
-  Timer1.pwm(ENGINE_FAN_PIN, buf[2]<<2); 
+  // Set each digital
+  digitalWrite(BRAKE_LIGHT_PIN, buf[BRAKE_LIGHT_BYTE]>>BRAKE_LIGHT_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+  digitalWrite(FUEL_PUMP_PIN, buf[FUEL_PUMP_BYTE]>>FUEL_PUMP_BIT&MASK_1);
+
+  // Set the pwm on the fan output
+  word faninput = buf[2]*4;
+  Timer1.pwm(ENGINE_FAN_PIN, faninput); // (pin, output out of 1024)
 }
 
-void handleCANMessage(void)
-{
-  if (CAN_MSGAVAIL == CAN.checkReceive())
-  {
-      uint8_t buf[8];
-      uint8_t len = 0;
-      CAN.readMsgBuf(&len, buf);
-      ioRegisterManipulation(len, buf);
-  }
-}
+void setup(){
 
-void setup()
-{
+  // Initialize a timer with 25 us cycles (40kHz) for strobing the transistor on the fan output
+  Timer1.initialize(25);
 
-  // Initialize a timer with 2000 us cycles (500Hz) for strobing the transistor on the fan output
-  Timer1.initialize(2000);
-  
+  // Create an infinite loop to prevent the program from starting before CAN is established
   for(;;)
   {
     if(CAN_OK == CAN.begin(CAN_500KBPS))
@@ -60,13 +44,29 @@ void setup()
     }
   }
 
-  CAN.init_Mask(0, 0, 0xFFF);                            // must set both masks; use standard CAN frame
-  CAN.init_Mask(1, 0, 0xFFF);                            // must set both masks; use standard CAN frame
-  CAN.init_Filt(0, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);  // filter 0 for receive buffer 0
-  CAN.init_Filt(2, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);  // filter 1 for receive buffer 1 
+  // Set both masks to check all digits (compare the entire ID to the filter) of the arbitration IDs
+  CAN.init_Mask(0, 0, 0xFFF);
+  CAN.init_Mask(1, 0, 0xFFF);
+
+  // Set the first filter on each buffer to only accept the desired arbitration ID
+  CAN.init_Filt(0, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
+  CAN.init_Filt(2, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
 }
 
-void loop()
-{
-  handleCANMessage();
+void loop(){
+
+  // If there is a message available in the buffer
+  if (CAN_MSGAVAIL == CAN.checkReceive())
+  {
+
+    // Create a buffer and insert the three byte message into it
+    byte buf[8];
+    byte len = 3;
+    CAN.readMsgBuf(&len, buf);
+
+    // Set the outputs of the board given the 
+    set_outputs(len, buf);
+    
+  }
+  
 }
