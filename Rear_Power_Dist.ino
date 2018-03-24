@@ -6,21 +6,6 @@
 
 MCP_CAN CAN(SPI_CS_PIN);
 
-void toggleDPortRegisterIO(uint8_t reg)
-{
-  DDRD |= reg;
-}
-
-void toggleCPortRegisterIO(uint8_t reg)
-{
-  DDRC |= reg;
-}
-
-void toggleBPortRegisterIO(uint8_t reg)
-{
-  DDRB |= reg;
-}
-
 void ioRegisterManipulation(uint8_t len, uint8_t* buf)
 {
   // TODO this should be mapped better but it works so leaving it.
@@ -57,15 +42,9 @@ void handleCANMessage(void)
 
 void setup()
 {
-  Timer1.initialize(2000);  // 2000 us = 500 Hz
 
-  uint8_t bPortRegister = 0b00000001;
-  uint8_t cPortRegister = 0b00111001;
-  uint8_t dPortRegister = 0b10100111;
-
-  toggleBPortRegisterIO(bPortRegister);
-  toggleCPortRegisterIO(cPortRegister);
-  toggleDPortRegisterIO(dPortRegister);
+  // Initialize a timer with 2000 us cycles (500Hz) for strobing the transistor on the fan output
+  Timer1.initialize(2000);
   
   for(;;)
   {
