@@ -28,7 +28,7 @@
 
 #define SHIFT_DN_BYTE 0
 #define SHIFT_DN_BIT 7
-#define SHIFT_DN_PIN A2
+#define SHIFT_DN_PIN 1
 
 #define SPARE_CPBRB_BYTE 1
 #define SPARE_CPBRB_BIT 1
