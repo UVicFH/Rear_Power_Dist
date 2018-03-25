@@ -12,7 +12,7 @@
 
 #define MS_BYTE 0
 #define MS_BIT 2
-#define MS_BYTE_PIN 7
+#define MS_PIN 7
 
 #define BRAKE_SOL_BYTE 0
 #define BRAKE_SOL_BIT 4
