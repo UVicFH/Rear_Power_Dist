@@ -1,6 +1,5 @@
 #include <mcp_can.h>
 #include <mcp_can_dfs.h>
-#include <TimerOne.h>
 
 #include "Pin_Defines.h"
 
@@ -19,16 +18,15 @@ void set_outputs(byte len, byte* buf)
   digitalWrite(SHIFT_DN_PIN, buf[SHIFT_DN_BYTE]>>SHIFT_DN_BIT&MASK_1);
   digitalWrite(SPARE_CPBRB_PIN, buf[SPARE_CPBRB_BYTE]>>SPARE_CPBRB_BIT&MASK_1);
 
-  // Set the pwm on the fan output
-  word faninput = buf[2]*4;
-  Timer1.pwm(ENGINE_FAN_PIN, faninput); // (pin, output out of 1024)
+  // Set the engine fan
+  analogWrite(ENGINE_FAN_PIN, buf[2]);
 }
 
 void setup(){
 
-  // Initialize a timer with 25 us cycles (40kHz) for strobing the transistor on the fan output
-  Timer1.initialize(25);
-
+  Serial.begin(9600);
+  SPI.begin();
+  
   // Create an infinite loop to prevent the program from starting before CAN is established
   for(;;)
   {
@@ -48,23 +46,29 @@ void setup(){
   CAN.init_Mask(0, 0, 0xFFF);
   CAN.init_Mask(1, 0, 0xFFF);
 
-  // Set the first filter on each buffer to only accept the desired arbitration ID
-  CAN.init_Filt(0, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
+  // Set all filters to only accept the desired arbitration ID
+  CAN.init_Filt(1, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
   CAN.init_Filt(2, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
+  CAN.init_Filt(3, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
+  CAN.init_Filt(4, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
+  CAN.init_Filt(5, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
+  CAN.init_Filt(0, 0, CAN_REAR_POWER_DIST_MSG_ADDRESS);
 }
 
 void loop(){
 
   // If there is a message available in the buffer
-  if (CAN_MSGAVAIL == CAN.checkReceive())
+  while (CAN_MSGAVAIL == CAN.checkReceive())
   {
-
+    Serial.println("CAN Recieved");
     // Create a buffer and insert the three byte message into it
     byte buf[8];
-    byte len = 3;
+    byte len = 0;
     CAN.readMsgBuf(&len, buf);
 
-    // Set the outputs of the board given the 
+    Serial.println("Message Recieved: " + buf[0]);
+
+    // Set the outputs of the board given the CAN message
     set_outputs(len, buf);
     
   }
