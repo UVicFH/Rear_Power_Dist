@@ -1,5 +1,4 @@
-#include <mcp_can.h>
-#include <mcp_can_dfs.h>
+#include "mcp_can.h"
 
 #include "Pin_Defines.h"
 
@@ -24,18 +23,25 @@ void set_outputs(byte len, byte* buf)
   if(buf[STARTER_BYTE]>>STARTER_BIT&MASK_1) Serial.println("Starter Activated!");
   digitalWrite(STARTER_PIN, buf[STARTER_BYTE]>>STARTER_BIT&MASK_1);
 
-  if(buf[SHIFT_UP_BYTE]>>SHIFT_UP_BIT&MASK_1) Serial.println("Upshift Activated!");
-  digitalWrite(SHIFT_UP_PIN, buf[SHIFT_UP_BYTE]>>SHIFT_UP_BIT&MASK_1);
+  //if(buf[SHIFT_UP_BYTE]>>SHIFT_UP_BIT&MASK_1) Serial.println("Upshift Activated!");
+  //digitalWrite(SHIFT_UP_PIN, buf[SHIFT_UP_BYTE]>>SHIFT_UP_BIT&MASK_1);
 
-  if(buf[SHIFT_DN_BYTE]>>SHIFT_DN_BIT&MASK_1) Serial.println("Downshift Activated!");
-  digitalWrite(SHIFT_DN_PIN, buf[SHIFT_DN_BYTE]>>SHIFT_DN_BIT&MASK_1);
+  //if(buf[SHIFT_DN_BYTE]>>SHIFT_DN_BIT&MASK_1) Serial.println("Downshift Activated!");
+  //digitalWrite(SHIFT_DN_PIN, buf[SHIFT_DN_BYTE]>>SHIFT_DN_BIT&MASK_1);
 
   if(buf[SPARE_CPBRB_BYTE]>>SPARE_CPBRB_BIT&MASK_1) Serial.println("Spare CPBRB Activated!");
   digitalWrite(SPARE_CPBRB_PIN, buf[SPARE_CPBRB_BYTE]>>SPARE_CPBRB_BIT&MASK_1);
 
   // Set the engine fan
-  if(buf[2] > 0) Serial.println("Fan Activated");
-  analogWrite(ENGINE_FAN_PIN, buf[2]);
+  if(buf[2] > 0) {
+    Serial.println("Fan Activated");
+    Serial.println(buf[2]);
+    int fan_pwm = 0.70*buf[2]; // reduce given value to 80 percent
+    analogWrite(ENGINE_FAN_PIN, fan_pwm);
+  } else {
+    digitalWrite(ENGINE_FAN_PIN, 0); //For pin 6, analog write may fully turn off fan
+  }
+  
 }
 
 void setup(){
